@@ -37,7 +37,7 @@ class Maze {
             // Create a new row
             this._maze.push([])
 
-            for (let x = 0; x < this._width; x++) {
+            for (let x = 0; x <= this._width; x++) {
                 this._maze[y][x] = 0
             }
         }
@@ -72,20 +72,20 @@ class Maze {
         for (let number of this.shuffle(numbers)) {
             switch (number) {
                 case 1: {
-                    if (this._current_cord.y - 1 > 0 && this._maze[this._current_cord.y - 1][this._current_cord.x] == 0) {
+                    if (this._current_cord.y - 1 >= 0 && this._maze[this._current_cord.y - 1][this._current_cord.x] == 0) {
                         all_neighbors.push({ y: this._current_cord.y - 1, x: this._current_cord.x })
                     }
                 }
                 case 2: {
-                    if (this._current_cord.y + 1 < this._height && this._maze[this._current_cord.y + 1][this._current_cord.x] == 0) {
+                    if (this._current_cord.y + 1 <= this._height && this._maze[this._current_cord.y + 1][this._current_cord.x] == 0) {
                         all_neighbors.push({ y: this._current_cord.y + 1, x: this._current_cord.x })
                     }
                 } case 3: {
-                    if (this._current_cord.x - 1 > 0 && this._maze[this._current_cord.y][this._current_cord.x - 1] == 0) {
+                    if (this._current_cord.x - 1 >= 0 && this._maze[this._current_cord.y][this._current_cord.x - 1] == 0) {
                         all_neighbors.push({ y: this._current_cord.y, x: this._current_cord.x - 1 })
                     }
                 } case 4: {
-                    if (this._current_cord.x + 1 < this._width && this._maze[this._current_cord.y][this._current_cord.x + 1] == 0) {
+                    if (this._current_cord.x + 1 <= this._width && this._maze[this._current_cord.y][this._current_cord.x + 1] == 0) {
                         all_neighbors.push({ y: this._current_cord.y, x: this._current_cord.x + 1 })
                     }
                 }
@@ -161,4 +161,4 @@ class Maze {
     }
 }
 
-let maze = new Maze(1000, 1000, 1)
+let maze = new Maze(5, 5, 1)

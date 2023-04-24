@@ -65,7 +65,7 @@ var Maze = /** @class */ (function () {
         for (var y = 0; y <= this._height; y++) {
             // Create a new row
             this._maze.push([]);
-            for (var x = 0; x < this._width; x++) {
+            for (var x = 0; x <= this._width; x++) {
                 this._maze[y][x] = 0;
             }
         }
@@ -97,22 +97,22 @@ var Maze = /** @class */ (function () {
             var number = _a[_i];
             switch (number) {
                 case 1: {
-                    if (this._current_cord.y - 1 > 0 && this._maze[this._current_cord.y - 1][this._current_cord.x] == 0) {
+                    if (this._current_cord.y - 1 >= 0 && this._maze[this._current_cord.y - 1][this._current_cord.x] == 0) {
                         all_neighbors.push({ y: this._current_cord.y - 1, x: this._current_cord.x });
                     }
                 }
                 case 2: {
-                    if (this._current_cord.y + 1 < this._height && this._maze[this._current_cord.y + 1][this._current_cord.x] == 0) {
+                    if (this._current_cord.y + 1 <= this._height && this._maze[this._current_cord.y + 1][this._current_cord.x] == 0) {
                         all_neighbors.push({ y: this._current_cord.y + 1, x: this._current_cord.x });
                     }
                 }
                 case 3: {
-                    if (this._current_cord.x - 1 > 0 && this._maze[this._current_cord.y][this._current_cord.x - 1] == 0) {
+                    if (this._current_cord.x - 1 >= 0 && this._maze[this._current_cord.y][this._current_cord.x - 1] == 0) {
                         all_neighbors.push({ y: this._current_cord.y, x: this._current_cord.x - 1 });
                     }
                 }
                 case 4: {
-                    if (this._current_cord.x + 1 < this._width && this._maze[this._current_cord.y][this._current_cord.x + 1] == 0) {
+                    if (this._current_cord.x + 1 <= this._width && this._maze[this._current_cord.y][this._current_cord.x + 1] == 0) {
                         all_neighbors.push({ y: this._current_cord.y, x: this._current_cord.x + 1 });
                     }
                 }
@@ -187,4 +187,4 @@ var Maze = /** @class */ (function () {
     });
     return Maze;
 }());
-var maze = new Maze(1000, 1000, 1);
+var maze = new Maze(5, 5, 1);
