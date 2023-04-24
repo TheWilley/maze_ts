@@ -13,8 +13,23 @@ class Maze {
         this._width = width
         this._height = height
 
+        this.createCanvas()
         this.createMaze()
         this.start()
+    }
+
+    createCanvas() {
+        let canvas = document.createElement("canvas")
+        canvas.id = "canvas"
+        canvas.width = this._width
+        canvas.height = this._height
+        document.body.appendChild(canvas)
+
+        let zoomedInCanvas = document.createElement("canvas")
+        zoomedInCanvas.id = "zoomed-in-canvas"
+        zoomedInCanvas.width = 50
+        zoomedInCanvas.height = 50
+        document.body.appendChild(zoomedInCanvas)
     }
 
     createMaze() {
@@ -79,6 +94,7 @@ class Maze {
 
         // Check if we are stuck
         if (all_neighbors.length == 0) {
+            // @ts-ignore
             neighbor = this._cords_stack.pop()
         } else {
             // Get random direction from neighbors
@@ -93,7 +109,11 @@ class Maze {
         return neighbor
     }
 
-    start() {
+    async start() {
+        // Get canvas
+        let canvas = document.getElementById("canvas")! as HTMLCanvasElement
+        let ctx = canvas.getContext("2d")!
+
         // Get random point
         this._current_cord = { y: Math.floor(Math.random() * this._height), x: Math.floor(Math.random() * this._width) }
         this._maze[this._current_cord.y][this._current_cord.x] = 1
@@ -103,12 +123,36 @@ class Maze {
             let neighbor = this.checkNeigbors()
 
             // Check if we are stuck, if so, break as we are done
-            if(neighbor == undefined) {
+            if (neighbor == undefined) {
                 break
             }
 
             // Set current cord to neighbor
             this._current_cord = neighbor
+
+            // Set color
+            ctx.fillStyle = "red"
+            
+            // Check if nighebor is in stack
+            if (this._cords_stack.includes(neighbor)) {
+                ctx.fillStyle = "black"
+            }
+
+            // Draw
+            ctx.fillRect(this._current_cord.x, this._current_cord.y, 1, 1)
+
+            // Get zoomed in canvas
+            let zoomedInCanvas = document.getElementById("zoomed-in-canvas")! as HTMLCanvasElement
+            let zoomedInCtx = zoomedInCanvas.getContext("2d")!
+
+            // Get 10 x 10 area around current cord 
+            let imageData = ctx.getImageData(this._current_cord.x - 25, this._current_cord.y - 25, 50, 50)
+
+            // Draw it with double pixel size
+            zoomedInCtx.putImageData(imageData, 0, 0)
+
+            // Wait
+            await new Promise(r => setTimeout(r, 1));
         }
     }
 
@@ -117,6 +161,4 @@ class Maze {
     }
 }
 
-let maze = new Maze(100, 100, 1)
-
-
+let maze = new Maze(1000, 1000, 1)
