@@ -133,6 +133,16 @@ class Maze {
         // Get time to complete
         let time_to_complete = this._uncleared_cells / average_speed
 
+        // Check if time to complete is infinity
+        if(time_to_complete == Infinity) {
+            return "Infinity"
+        }
+
+        // Check if we are done
+        if (this._uncleared_cells == 0) {
+            return "Done"
+        }
+
         // Return time to complete
         return time_to_complete
     }
