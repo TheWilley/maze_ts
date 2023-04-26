@@ -8,28 +8,25 @@ class Maze {
     private _height: number
     private _current_cord: { y: number, x: number } = { x: 0, y: 0 }
     private _cords_stack: { y: number, x: number }[] = []
+    private _completed_cells: number = 0
+    private _completed_cells_collection: number[] = []
+    private _total: number = 0
+    private _uncleared_cells: number = 0
 
-    constructor(width: number, height: number, seed: number) {
+    constructor(width: number, height: number) {
         this._width = width
         this._height = height
 
         this.createCanvas()
         this.createMaze()
+        this.addCurrentSpeed()
         this.start()
     }
 
     createCanvas() {
-        let canvas = document.createElement("canvas")
-        canvas.id = "canvas"
-        canvas.width = this._width
-        canvas.height = this._height
-        document.body.appendChild(canvas)
-
-        let zoomedInCanvas = document.createElement("canvas")
-        zoomedInCanvas.id = "zoomed-in-canvas"
-        zoomedInCanvas.width = 50
-        zoomedInCanvas.height = 50
-        document.body.appendChild(zoomedInCanvas)
+        let maze = document.getElementById("maze")! as HTMLCanvasElement
+        maze.width = this._width
+        maze.height = this._height
     }
 
     createMaze() {
@@ -109,14 +106,61 @@ class Maze {
         return neighbor
     }
 
+    async addCurrentSpeed() {
+        // Get amount of completed cells per second with a timeer of 1 second
+        let amount = 0
+        while (true) {
+            amount = this._completed_cells
+            this._completed_cells_collection.push(amount)
+            this._completed_cells = 0
+            await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+    }
+
+    getAverageSpeed() {
+        let total = 0
+        for (let amount of this._completed_cells_collection) {
+            total += amount
+        }
+
+        return total / this._completed_cells_collection.length
+    }
+
+    getTimeToComplete() {
+        // Get average speed
+        let average_speed = this.getAverageSpeed()
+
+        // Get time to complete
+        let time_to_complete = this._uncleared_cells / average_speed
+
+        // Return time to complete
+        return time_to_complete
+    }
+        
+    secondsToHms(d: number) {
+        d = Number(d);
+        var h = Math.floor(d / 3600);
+        var m = Math.floor(d % 3600 / 60);
+        var s = Math.floor(d % 3600 % 60);
+
+        var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+        var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+        var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+        return hDisplay + mDisplay + sDisplay;
+    }
+
     async start() {
         // Get canvas
-        let canvas = document.getElementById("canvas")! as HTMLCanvasElement
+        let canvas = document.getElementById("maze")! as HTMLCanvasElement
         let ctx = canvas.getContext("2d")!
 
         // Get random point
         this._current_cord = { y: Math.floor(Math.random() * this._height), x: Math.floor(Math.random() * this._width) }
         this._maze[this._current_cord.y][this._current_cord.x] = 1
+
+        this._total = this._width * this._height + (this._width % (this._width * this._height) + this._height % (this._width * this._height))
+        let uncleared = this._total
+        let cleared = 0
 
         while (true) {
             // Check neighbors
@@ -130,30 +174,31 @@ class Maze {
             // Set current cord to neighbor
             this._current_cord = neighbor
 
-            // Set color
-            ctx.fillStyle = "red"
-            
             // Check if nighebor is in stack
             if (this._cords_stack.includes(neighbor)) {
                 ctx.fillStyle = "black"
+            } else {
+                ctx.fillStyle = "red"
+                uncleared--
+                cleared++
             }
+
+            // Set uncleared global
+            this._uncleared_cells = uncleared
 
             // Draw
             ctx.fillRect(this._current_cord.x, this._current_cord.y, 1, 1)
 
-            // Get zoomed in canvas
-            let zoomedInCanvas = document.getElementById("zoomed-in-canvas")! as HTMLCanvasElement
-            let zoomedInCtx = zoomedInCanvas.getContext("2d")!
+            // Increase completed cells
+            this._completed_cells++
 
-            // Get 10 x 10 area around current cord 
-            let imageData = ctx.getImageData(this._current_cord.x - 25, this._current_cord.y - 25, 50, 50)
-
-            // Draw it with double pixel size
-            zoomedInCtx.putImageData(imageData, 0, 0)
+            // Update info
+            document.getElementById("info")!.innerHTML = `Cleared: ${cleared} / ${this._total} (${((cleared / this._total) * 100).toFixed(2)}%)<br>Uncleared: ${uncleared} / ${this._total} (${((uncleared / this._total) * 100).toFixed(2)}%)<br>Average speed: ${this.getAverageSpeed().toFixed(2)} cells / second<br>Time to complete: ${this.secondsToHms(this.getTimeToComplete())}`
 
             // Wait
             await new Promise(r => setTimeout(r, 1));
         }
+        console.log("Done!")
     }
 
     get maze() {
@@ -161,4 +206,4 @@ class Maze {
     }
 }
 
-let maze = new Maze(5, 5, 1)
+let maze = new Maze(100, 100)
