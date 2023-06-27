@@ -13,7 +13,7 @@ function App() {
   const mazeInstanceRef = useRef<Maze>();
 
   useEffect(() => {
-    mazeInstanceRef.current = new Maze(Number(widthInput), Number(heightInput), mazeRef.current, infoRef.current, () => {
+    mazeInstanceRef.current = new Maze(Number(widthInput), Number(heightInput), mazeRef.current!, infoRef.current!, () => {
       setRunning(false);
     });
   }, [heightInput, widthInput]);

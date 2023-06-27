@@ -65,29 +65,29 @@ export default class Maze {
     checkNeigbors() {
         // Define variables
         const all_neighbors = []
-        const numbers = [0, 1, 2, 3]
+        const numbers = [1, 2, 3, 4]
         let neighbor: { y: number, x: number } | undefined = { y: 0, x: 0 }
 
         // We check all neghbors and push it if it's free
         for (const number of this.shuffle(numbers)) {
-            switch (number) {
-                case 1: {
-                    if (this._current_cord.y - 1 >= 0 && this._maze[this._current_cord.y - 1][this._current_cord.x] == 0) {
-                        all_neighbors.push({ y: this._current_cord.y - 1, x: this._current_cord.x })
-                    }
+            if (number == 1) {
+                if (this._current_cord.y - 1 >= 0 && this._maze[this._current_cord.y - 1][this._current_cord.x] == 0) {
+                    all_neighbors.push({ y: this._current_cord.y - 1, x: this._current_cord.x })
                 }
-                case 2: {
-                    if (this._current_cord.y + 1 <= this._height && this._maze[this._current_cord.y + 1][this._current_cord.x] == 0) {
-                        all_neighbors.push({ y: this._current_cord.y + 1, x: this._current_cord.x })
-                    }
-                } case 3: {
-                    if (this._current_cord.x - 1 >= 0 && this._maze[this._current_cord.y][this._current_cord.x - 1] == 0) {
-                        all_neighbors.push({ y: this._current_cord.y, x: this._current_cord.x - 1 })
-                    }
-                } case 4: {
-                    if (this._current_cord.x + 1 <= this._width && this._maze[this._current_cord.y][this._current_cord.x + 1] == 0) {
-                        all_neighbors.push({ y: this._current_cord.y, x: this._current_cord.x + 1 })
-                    }
+
+            } else if (number == 2) {
+                if (this._current_cord.y + 1 <= this._height && this._maze[this._current_cord.y + 1][this._current_cord.x] == 0) {
+                    all_neighbors.push({ y: this._current_cord.y + 1, x: this._current_cord.x })
+                }
+
+            } else if (number == 3) {
+                if (this._current_cord.x - 1 >= 0 && this._maze[this._current_cord.y][this._current_cord.x - 1] == 0) {
+                    all_neighbors.push({ y: this._current_cord.y, x: this._current_cord.x - 1 })
+                }
+
+            } else if (number == 4) {
+                if (this._current_cord.x + 1 <= this._width && this._maze[this._current_cord.y][this._current_cord.x + 1] == 0) {
+                    all_neighbors.push({ y: this._current_cord.y, x: this._current_cord.x + 1 })
                 }
             }
         }
