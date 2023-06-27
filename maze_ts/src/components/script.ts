@@ -1,32 +1,35 @@
+/* eslint-disable no-fallthrough */
+
 /*/
 Maze Creator
 /*/
 
-class Maze {
+export default class Maze {
     private _maze: number[][] = []
     private _width: number
     private _height: number
     private _current_cord: { y: number, x: number } = { x: 0, y: 0 }
     private _cords_stack: { y: number, x: number }[] = []
-    private _completed_cells: number = 0
+    private _completed_cells = 0
     private _completed_cells_collection: number[] = []
-    private _total: number = 0
-    private _uncleared_cells: number = 0
+    private _total = 0
+    private _backtracking = false
+    private _cleared_cells = 0
+    private _uncleared_cells = 0
+    private _canvasElement: HTMLCanvasElement
+    private _infoElement: HTMLElement
+    private _doneCallback: () => void
+    private _stop = false
 
-    constructor(width: number, height: number) {
+    constructor(width: number, height: number, canvasElement: HTMLCanvasElement, infoElement: HTMLElement, doneCallback: () => void) {
         this._width = width
         this._height = height
+        this._canvasElement = canvasElement
+        this._infoElement = infoElement
+        this._doneCallback = doneCallback
 
-        this.createCanvas()
         this.createMaze()
         this.addCurrentSpeed()
-        this.start()
-    }
-
-    createCanvas() {
-        let maze = document.getElementById("maze")! as HTMLCanvasElement
-        maze.width = this._width
-        maze.height = this._height
     }
 
     createMaze() {
@@ -57,16 +60,16 @@ class Maze {
         }
 
         return array;
-    };
+    }
 
     checkNeigbors() {
         // Define variables
-        let all_neighbors = []
-        let numbers = [0, 1, 2, 3]
-        let neighbor = { y: 0, x: 0 }
+        const all_neighbors = []
+        const numbers = [0, 1, 2, 3]
+        let neighbor: { y: number, x: number } | undefined = { y: 0, x: 0 }
 
         // We check all neghbors and push it if it's free
-        for (let number of this.shuffle(numbers)) {
+        for (const number of this.shuffle(numbers)) {
             switch (number) {
                 case 1: {
                     if (this._current_cord.y - 1 >= 0 && this._maze[this._current_cord.y - 1][this._current_cord.x] == 0) {
@@ -91,11 +94,10 @@ class Maze {
 
         // Check if we are stuck
         if (all_neighbors.length == 0) {
-            // @ts-ignore
             neighbor = this._cords_stack.pop()
         } else {
             // Get random direction from neighbors
-            let direction = Math.floor(Math.random() * all_neighbors.length)
+            const direction = Math.floor(Math.random() * all_neighbors.length)
             neighbor = all_neighbors[direction]
 
             // Mark neighbor
@@ -109,6 +111,7 @@ class Maze {
     async addCurrentSpeed() {
         // Get amount of completed cells per second with a timeer of 1 second
         let amount = 0
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             amount = this._completed_cells
             this._completed_cells_collection.push(amount)
@@ -119,7 +122,7 @@ class Maze {
 
     getAverageSpeed() {
         let total = 0
-        for (let amount of this._completed_cells_collection) {
+        for (const amount of this._completed_cells_collection) {
             total += amount
         }
 
@@ -128,58 +131,79 @@ class Maze {
 
     getTimeToComplete() {
         // Get average speed
-        let average_speed = this.getAverageSpeed()
+        const average_speed = this.getAverageSpeed()
 
         // Get time to complete
-        let time_to_complete = this._uncleared_cells / average_speed
+        const time_to_complete = this._uncleared_cells / average_speed
 
         // Check if time to complete is infinity
-        if(time_to_complete == Infinity) {
+        if (time_to_complete == Infinity) {
             return "Infinity"
         }
 
         // Check if we are done
         if (this._uncleared_cells == 0) {
+            this._doneCallback()
             return "Done"
         }
 
         // Return time to complete
         return time_to_complete
     }
-        
+
     secondsToHms(d: number | string) {
         // Check if d is a string
-        if(typeof d == "string") return d
+        if (typeof d == "string") return d
 
         // Continue
         d = Number(d);
-        var h = Math.floor(d / 3600);
-        var m = Math.floor(d % 3600 / 60);
-        var s = Math.floor(d % 3600 % 60);
+        const h = Math.floor(d / 3600);
+        const m = Math.floor(d % 3600 / 60);
+        const s = Math.floor(d % 3600 % 60);
 
-        var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
-        var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-        var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+        const hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+        const mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+        const sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
 
         return hDisplay + mDisplay + sDisplay;
     }
 
+    public getInfo() {
+        const info = {
+            cleared: `<b> Cleared: </b> ${this._cleared_cells} / ${this._total} (${((this._cleared_cells / this._total) * 100).toFixed(2)}%)`,
+            uncleared: `<b> Uncleared: </b> ${this._uncleared_cells} / ${this._total} (${((this._uncleared_cells / this._total) * 100).toFixed(2)}%)`,
+            status: `<b> Status: </b> ${this._backtracking ? 'Backtracking' : "Drawing"}`,
+            avarage_speed: `<b> Average speed: </b> ${this.getAverageSpeed().toFixed(2)} cells / second`,
+            time_to_complete: `<b> Time to complete: </b> ${this.secondsToHms(this.getTimeToComplete())}`
+        }
+
+        return info.cleared + '<br>' + info.uncleared + '<br>' + info.status + '<br>' + info.avarage_speed + '<br>' + info.time_to_complete
+    }
+
     async start() {
         // Get canvas
-        let canvas = document.getElementById("maze")! as HTMLCanvasElement
-        let ctx = canvas.getContext("2d")!
+        const ctx = this._canvasElement.getContext("2d")
+
+        // Make sure ctx is not null
+        if (!ctx) return;
+
+        // Reset stop parameter
+        this._stop = false
+
+        // Clear canvas
+        ctx.clearRect(0, 0, this._canvasElement.width, this._canvasElement.height)
 
         // Get random point
         this._current_cord = { y: Math.floor(Math.random() * this._height), x: Math.floor(Math.random() * this._width) }
         this._maze[this._current_cord.y][this._current_cord.x] = 1
 
         this._total = this._width * this._height + (this._width % (this._width * this._height) + this._height % (this._width * this._height))
-        let uncleared = this._total
-        let cleared = 0
+        this._uncleared_cells = this._total
+        this._cleared_cells = 0
 
-        while (true) {
+        while (!this._stop) {
             // Check neighbors
-            let neighbor = this.checkNeigbors()
+            const neighbor = this.checkNeigbors()
 
             // Check if we are stuck, if so, break as we are done
             if (neighbor == undefined) {
@@ -192,14 +216,13 @@ class Maze {
             // Check if nighebor is in stack
             if (this._cords_stack.includes(neighbor)) {
                 ctx.fillStyle = "black"
+                this._backtracking = false
             } else {
                 ctx.fillStyle = "red"
-                uncleared--
-                cleared++
+                this._uncleared_cells--
+                this._cleared_cells++
+                this._backtracking = true
             }
-
-            // Set uncleared global
-            this._uncleared_cells = uncleared
 
             // Draw
             ctx.fillRect(this._current_cord.x, this._current_cord.y, 1, 1)
@@ -208,17 +231,14 @@ class Maze {
             this._completed_cells++
 
             // Update info
-            document.getElementById("info")!.innerHTML = `Cleared: ${cleared} / ${this._total} (${((cleared / this._total) * 100).toFixed(2)}%)<br>Uncleared: ${uncleared} / ${this._total} (${((uncleared / this._total) * 100).toFixed(2)}%)<br>Average speed: ${this.getAverageSpeed().toFixed(2)} cells / second<br>Time to complete: ${this.secondsToHms(this.getTimeToComplete())}`
+            this._infoElement.innerHTML = this.getInfo()
 
             // Wait
             await new Promise(r => setTimeout(r, 1));
         }
-        console.log("Done!")
     }
 
-    get maze() {
-        return this._maze
+    public stop() {
+        this._stop = true
     }
 }
-
-let maze = new Maze(1000, 1000)
