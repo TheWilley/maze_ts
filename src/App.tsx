@@ -1,4 +1,4 @@
-import React, {ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState} from 'react'
+import React, {ChangeEvent, FormEvent, useMemo, useRef, useState} from 'react'
 import Maze from './components/script';
 import './App.css'
 
@@ -86,7 +86,7 @@ function App() {
                     <div className="flex flex-col justify-center">
                         <input
                             type="submit"
-                            className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-1 h-full ml-2 h-[115px]"
+                            className="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-1 h-full ml-2"
                             value={isRunning ? 'Click to stop' : mazeInstanceRef.current ? 'Click to restart' : 'Click to start'}
                         />
                     </div>
