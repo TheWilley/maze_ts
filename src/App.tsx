@@ -1,5 +1,5 @@
 import React, {ChangeEvent, FormEvent, useMemo, useRef, useState} from 'react'
-import Maze from './components/script';
+import Maze from './utils/script';
 import './App.css'
 
 function App() {
